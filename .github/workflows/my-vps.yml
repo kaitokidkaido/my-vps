@@ -1,0 +1,46 @@
+tên: Windows-RDP
+
+trên: workflow_dispatch
+
+việc làm:
+  xây dựng:
+
+    chạy trên: windows-mới nhất
+    thời gian chờ-phút: 9999
+
+    các bước:
+    - tên: Tải xuống Ngrok.
+      chạy: |
+        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+        Invoke-WebRequest https://raw.githubusercontent.com/DinhPhuc/windows-rdp/main/start.bat -OutFile start.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/DinhPhuc/windows-rdp/main/wallpaper.png -OutFile wallpaper.png
+        Invoke-WebRequest https://raw.githubusercontent.com/DinhPhuc/windows-rdp/main/wallpaper.bat -OutFile wallpaper.bat
+        Invoke-WebRequest https://raw.githubusercontent.com/DinhPhuc/windows-rdp/main/loop.bat -OutFile loop.bat
+    - tên: Tải xuống Trình khởi chạy.
+      chạy: |
+        Invoke-WebRequest https://raw.githubusercontent.com/DinhPhuc/windows-rdp/main/launcher/Node.js.lnk -OutFile Node.js.lnk
+        Invoke-WebRequest https://raw.githubusercontent.com/DinhPhuc/windows-rdp/main/launcher/Visual%20Studio%202019.lnk -OutFile "Visual Studio 2019.lnk"
+        Invoke-WebRequest https://github.com/DinhPhuc/windows-rdp/raw/main/launcher/Ganti%20Password.exe -OutFile "Ganti Password.exe"
+    - tên: Giải nén tệp Ngrok.
+      run: Mở rộng-Lưu trữ ngrok.zip
+    - tên: Kết nối Ngrok.
+      run:. \ ngrok \ ngrok.exe authtoken $ Env: NGROK_AUTH_TOKEN
+      vi:
+        NGROK_AUTH_TOKEN: $ {{secret.NGROK_AUTH_TOKEN}}
+    - tên: Action Access RDP.
+      chạy: | 
+        Set-ItemProperty -Path 'HKLM: \ System \ CurrentControlSet \ Control \ Terminal Server'-name "fDenyTSConnections" -Giá trị 0
+        Enable-NetFirewallRule -DisplayGroup "Máy tính từ xa"
+        Set-ItemProperty -Path 'HKLM: \ System \ CurrentControlSet \ Control \ Terminal Server \ WinStations \ RDP-Tcp' -name "UserAuthentication" -Giá trị 1
+        sao chép wallpaper.png D: \ a \ wallpaper.png
+        sao chép wallpaper.bat D: \ a \ wallpaper.bat
+        sao chép Node.js.lnk C: \ Users \ Public \ Desktop \ Node.js.lnk
+        sao chép "Visual Studio 2019.lnk" "C: \ Users \ Public \ Desktop \ Visual Studio 2019.lnk"
+        sao chép "Ganti Password.exe" "C: \ Users \ Public \ Desktop \ Ganti Password.exe"
+    - tên: Làm đường hầm
+      run: Start-Process Powershell -ArgumentList '-Noexit -Command ". \ ngrok \ ngrok.exe tcp --region ap 3389"'
+    - tên: Kết nối RDP CPU 2 Core - Ram 7GB - SSD 256.
+      run: cmd / c start.bat
+    - tên: Thực hiện thành công! Bạn có thể đóng tab ngay bây giờ.
+      run: cmd / c loop.bat
+1
